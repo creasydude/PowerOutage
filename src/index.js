@@ -124,8 +124,13 @@ function saveUserData(chatId, data) {
   return getUserData(chatId);
 }
 
-// Helper function to fetch data from API
-async function fetchApiData(billId, authToken) {
+// Helper function to fetch data from API with retry capability
+async function fetchApiData(billId, authToken, retryCount = 0) {
+  // Maximum number of retry attempts
+  const MAX_RETRIES = 5;
+  // Base delay in milliseconds (will be multiplied by 2^retryCount for exponential backoff)
+  const BASE_DELAY = 2000;
+  
   try {
     const persianDate = getPersianDate();
     const persianNextDate = getPersianNextDate();
@@ -151,8 +156,37 @@ async function fetchApiData(billId, authToken) {
     
     return response.data;
   } catch (error) {
-    console.error('API Error:', error.message);
-    return { error: 'Failed to fetch data from API' };
+    // Check if error has response and status code is 500 (Internal Server Error)
+    const isServerError = error.response && error.response.status >= 500 && error.response.status < 600;
+    
+    // If it's a server error and we haven't exceeded max retries
+    if (isServerError && retryCount < MAX_RETRIES) {
+      // Calculate delay with exponential backoff (1s, 2s, 4s, ...)
+      const delay = BASE_DELAY * Math.pow(2, retryCount);
+      console.log(`API Error (${error.response.status}): Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+      
+      // Wait for the calculated delay
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      // Retry the request with incremented retry count
+      return fetchApiData(billId, authToken, retryCount + 1);
+    }
+    
+    // If max retries exceeded or it's not a server error
+    // Log detailed error information
+    if (error.response) {
+      // The request was made and the server responded with a status code outside of 2xx range
+      console.error(`API Error: Status ${error.response.status}`, error.response.data);
+      return { error: `API Error (Status ${error.response.status}): ${error.response.data?.message || 'Server responded with an error'}` };
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('API Error: No response received', error.request);
+      return { error: 'Failed to fetch data from API: No response received' };
+    } else {
+      // Something happened in setting up the request
+      console.error('API Error:', error.message);
+      return { error: `Failed to fetch data from API: ${error.message}` };
+    }
   }
 }
 
