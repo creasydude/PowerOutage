@@ -131,8 +131,8 @@ async function fetchApiData(billId, authToken) {
     const persianNextDate = getPersianNextDate();
     // Use API endpoint from environment variables
     const apiEndpoint = process.env.API_ENDPOINT || 'https://uiapi2.saapa.ir/api/ebills/PlannedBlackoutsReport';
-    const response = await axios.get(apiEndpoint, {
-      params: {
+    const response = await axios.post(apiEndpoint, {
+      body: {
         bill_id: billId,
         from_date: persianDate,
         to_date: persianNextDate
