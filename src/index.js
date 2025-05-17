@@ -130,7 +130,7 @@ async function fetchApiData(billId, authToken) {
     const persianDate = getPersianDate();
     const persianNextDate = getPersianNextDate();
     // Use API endpoint from environment variables
-    const apiEndpoint = process.env.API_ENDPOINT || 'https://api.example.com/power-outage';
+    const apiEndpoint = process.env.API_ENDPOINT || 'https://uiapi2.saapa.ir/api/ebills/PlannedBlackoutsReport';
     const response = await axios.get(apiEndpoint, {
       params: {
         bill_id: billId,
