@@ -131,18 +131,23 @@ async function fetchApiData(billId, authToken) {
     const persianNextDate = getPersianNextDate();
     // Use API endpoint from environment variables
     const apiEndpoint = process.env.API_ENDPOINT || 'https://uiapi2.saapa.ir/api/ebills/PlannedBlackoutsReport';
-    const response = await axios.post(apiEndpoint, {
-      body: {
+    
+    const response = await axios.post(apiEndpoint, 
+      // Request body
+      {
         bill_id: billId,
         from_date: persianDate,
         to_date: persianNextDate
       },
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
-        'Authorization': `Bearer ${authToken}`
+      // Request config (including headers)
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+          'Authorization': `Bearer ${authToken}`
+        }
       }
-    });
+    );
     
     return response.data;
   } catch (error) {
